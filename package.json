@@ -1,0 +1,25 @@
+{
+  "name": "@talocode/flowlane",
+  "version": "0.1.0",
+  "description": "Visual AI workflow builder — drag, drop, deploy",
+  "main": "src/index.js",
+  "bin": {
+    "flowlane": "./bin/flowlane.js",
+    "flowlane-mcp": "./bin/mcp.js"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "mcp": "node src/mcp/server.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "keywords": ["talocode", "flowlane", "ai", "workflows", "visual", "drag-drop", "mcp"],
+  "author": "Talocode",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/talocode/flowlane"
+  }
+}
