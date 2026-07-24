@@ -29,6 +29,10 @@ function getTemplates() {
   return [
     { id: 'chatbot', name: 'Chatbot', description: 'Input → Prompt → Output' },
     { id: 'pipeline', name: 'Data Pipeline', description: 'Input → Transform → Output' },
+    { id: 'council', name: 'LLM Council', description: 'Multiple models evaluate task, aggregate results' },
+    { id: 'router', name: 'Dynamic Router', description: 'Route task to best agent based on type' },
+    { id: 'judge-executor', name: 'Judge/Executor', description: 'One agent reviews, another implements' },
+    { id: 'cost-router', name: 'Cost Router', description: 'Route to cheapest model meeting quality threshold' },
   ];
 }
 

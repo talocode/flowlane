@@ -1,12 +1,21 @@
 #!/usr/bin/env node
 const { Command } = require('commander');
 const path = require('path');
+const {
+  detectTaskType,
+  selectAgent,
+  createCouncilWorkflow,
+  createRouterWorkflow,
+  createJudgeExecutorWorkflow,
+  createCostRouterWorkflow,
+  AGENTS,
+} = require('../src/dynamic-workflows');
 
 const program = new Command();
 program
   .name('flowlane')
   .description('Visual AI workflow builder — drag, drop, deploy')
-  .version('0.1.0');
+  .version('0.2.0');
 
 program
   .command('init')
@@ -413,5 +422,112 @@ function getBuilderHTML() {
 </body>
 </html>`;
 }
+
+// Dynamic workflow commands
+const dynamic = program.command('dynamic').description('Dynamic workflow patterns');
+
+dynamic.command('council')
+  .description('Create LLM council workflow (multiple models evaluate task)')
+  .argument('<task>', 'Task description')
+  .option('-m, --models <models...>', 'Models to use', ['claude-sonnet', 'gpt-4o', 'gemini-pro'])
+  .option('-a, --aggregation <method>', 'Aggregation method (vote, average, best)', 'vote')
+  .option('-o, --output <path>', 'Output file path')
+  .action((task, opts) => {
+    const workflow = createCouncilWorkflow({ task, models: opts.models, aggregation: opts.aggregation });
+    console.log(JSON.stringify(workflow, null, 2));
+    if (opts.output) {
+      const fs = require('fs');
+      fs.writeFileSync(opts.output, JSON.stringify(workflow, null, 2));
+      console.log(`\nSaved to: ${opts.output}`);
+    }
+  });
+
+dynamic.command('router')
+  .description('Create dynamic router workflow (route to best agent)')
+  .argument('<task>', 'Task description')
+  .option('--max-cost <cost>', 'Max cost per 1k tokens')
+  .option('--max-latency <latency>', 'Max latency (low, medium, high)')
+  .option('-o, --output <path>', 'Output file path')
+  .action((task, opts) => {
+    const constraints = {};
+    if (opts.maxCost) constraints.maxCost = parseFloat(opts.maxCost);
+    if (opts.maxLatency) constraints.maxLatency = opts.maxLatency;
+    
+    const workflow = createRouterWorkflow({ task, constraints });
+    console.log(JSON.stringify(workflow, null, 2));
+    if (opts.output) {
+      const fs = require('fs');
+      fs.writeFileSync(opts.output, JSON.stringify(workflow, null, 2));
+      console.log(`\nSaved to: ${opts.output}`);
+    }
+  });
+
+dynamic.command('judge-executor')
+  .description('Create judge/executor workflow (review + implement)')
+  .argument('<task>', 'Task description')
+  .option('--judge <model>', 'Judge model', 'claude-opus')
+  .option('--executor <model>', 'Executor model', 'claude-sonnet')
+  .option('--max-iterations <n>', 'Max review iterations', '3')
+  .option('-o, --output <path>', 'Output file path')
+  .action((task, opts) => {
+    const workflow = createJudgeExecutorWorkflow({
+      task,
+      judgeModel: opts.judge,
+      executorModel: opts.executor,
+      maxIterations: parseInt(opts.maxIterations),
+    });
+    console.log(JSON.stringify(workflow, null, 2));
+    if (opts.output) {
+      const fs = require('fs');
+      fs.writeFileSync(opts.output, JSON.stringify(workflow, null, 2));
+      console.log(`\nSaved to: ${opts.output}`);
+    }
+  });
+
+dynamic.command('cost-router')
+  .description('Create cost-based router workflow')
+  .argument('<task>', 'Task description')
+  .option('-q, --quality <level>', 'Quality threshold (highest, high, good)', 'high')
+  .option('-b, --budget <amount>', 'Max budget in dollars', '0.10')
+  .option('-o, --output <path>', 'Output file path')
+  .action((task, opts) => {
+    const workflow = createCostRouterWorkflow({
+      task,
+      qualityThreshold: opts.quality,
+      maxBudget: parseFloat(opts.budget),
+    });
+    console.log(JSON.stringify(workflow, null, 2));
+    if (opts.output) {
+      const fs = require('fs');
+      fs.writeFileSync(opts.output, JSON.stringify(workflow, null, 2));
+      console.log(`\nSaved to: ${opts.output}`);
+    }
+  });
+
+dynamic.command('detect')
+  .description('Detect task type from description')
+  .argument('<task>', 'Task description')
+  .action((task) => {
+    const taskType = detectTaskType(task);
+    const agent = selectAgent(taskType);
+    console.log(`Task type: ${taskType}`);
+    console.log(`Recommended agent: ${agent}`);
+    console.log(`Agent info:`, AGENTS[agent]);
+  });
+
+dynamic.command('agents')
+  .description('List available agents and their capabilities')
+  .action(() => {
+    console.log('Available agents:\n');
+    for (const [id, agent] of Object.entries(AGENTS)) {
+      console.log(`${id}:`);
+      console.log(`  Name: ${agent.name}`);
+      console.log(`  Quality: ${agent.quality}`);
+      console.log(`  Cost: $${agent.costPer1kTokens}/1k tokens`);
+      console.log(`  Latency: ${agent.latency}`);
+      console.log(`  Capabilities: ${agent.capabilities.join(', ')}`);
+      console.log();
+    }
+  });
 
 program.parse();

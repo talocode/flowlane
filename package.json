@@ -1,7 +1,7 @@
 {
   "name": "@talocode/flowlane",
-  "version": "0.1.0",
-  "description": "Visual AI workflow builder — drag, drop, deploy",
+  "version": "0.2.0",
+  "description": "Visual AI workflow builder — drag, drop, deploy with dynamic agent routing",
   "main": "src/index.js",
   "bin": {
     "flowlane": "./bin/flowlane.js",
@@ -13,9 +13,21 @@
     "test": "node test.js"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "commander": "^13.1.0"
   },
-  "keywords": ["talocode", "flowlane", "ai", "workflows", "visual", "drag-drop", "mcp"],
+  "keywords": [
+    "talocode",
+    "flowlane",
+    "ai",
+    "workflows",
+    "visual",
+    "drag-drop",
+    "mcp",
+    "dynamic",
+    "routing",
+    "council"
+  ],
   "author": "Talocode",
   "license": "MIT",
   "repository": {
