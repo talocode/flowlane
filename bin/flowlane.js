@@ -530,4 +530,12 @@ dynamic.command('agents')
     }
   });
 
+program
+  .command('tutorial')
+  .description('Start interactive tutorial')
+  .action(async () => {
+    const { startTutorial } = require('../src/core/tutorial.js');
+    await startTutorial();
+  });
+
 program.parse();
